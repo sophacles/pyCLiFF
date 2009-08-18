@@ -1,0 +1,53 @@
+pyCLiFF, the Python Command Line Filter Framework is a simple tool designed
+to remove the boilerplate and annoyances from command line filters.
+
+By command line filter, I mean any command line tool in the grand *nix tradition
+of taking text input and returning text output.  This text may come in from
+a file or from stdin, and leave via file or stdout. As we all know this is the
+basis for the powerful piplined commands in the shell.  Over the years I have
+created many tools to work into a text processing pipeline, in many different
+languages.  Such tools always follow the same pattern:
+
+1. Setup/handle arguments
+2. Mainloop:
+  A. Read line from input file (stdin or file)
+  B. Process that line in some way
+  C. Output the result of processing.
+3. Cleanup and exit.
+
+At somepoint I realized that I was typing large chunks of code from memory, and
+that I was even creating fairly standard option sets. So I decided to factor out
+this module.
+
+This module is designed to be used in 2 ways:
+
+1. As a callback framework:
+
+In this use case, the CLF object is instantiated by the user. During this
+instantiation, or during runtime, hook functions are provided to the CLF
+object. These hook functions will be called to handle particular events, or to
+do application specific tasks, such as handling arguments. This usage is fairly
+straight forward and very nice for simple modules. It does however tend to
+result in the use of globals, superfluous state keeping objects, or complicated
+closure mechanisms. This method, therefore, is reccommended only for short and
+simple scripts.  See examples/head.py to see this usage. (It implements a very
+limited clone of the standard *nix utility head).
+
+2. As an inheritable object:
+
+In more complex scripts, or those that need a lot of state kept, it may be more
+convenient to simply subclass CLF and override the relevant methods, keeping
+state in the CLF object itself.  By doing this the mainloop may be customized
+if the above pattern is overly simplistic.  The CLF class was designed with
+such inheritence in mind, and as such will be "friendly" to the inheritor: if a
+subclass implements hook functions, the CLF superclass will not override them,
+even if hook functions are provided in the call to __init__.
+
+Overall this project's primary goal is to greatly speed up the process of
+writing one-off tools and quick data processing scripts.  The complexities that
+do exist (such as optparse args, and the stderr messaging facility) are an
+acknowledgement to the fact that one-off tools can be difficult, and sometimes
+are required to grow into "real" programs.
+
+Please see the examples, docs and code for more details.  Contributors are of
+course welcome, please email me or contribute via github standard mechanisms.
