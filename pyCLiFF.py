@@ -63,11 +63,11 @@ class CLF(object):
         self.__OP.add_option(*args, **kw)
 
     def config(self):
-        if not self.confighandler: return
+        if not self.handle_config: return
         fd = open(self.configfile, 'r')
         data = fd.read()
         fd.close()
-        self.confighandler(data)
+        self.hndle_config(data)
 
     def handle_cl(self):
         opts, params = self.__OP.parse_args()
@@ -85,7 +85,8 @@ class CLF(object):
         if params:
             self.__infile_name = params[0]
             # user parameters handler
-            self.handle_params(params[1:])
+            if len(params) > 1:
+                self.handle_params(params[1:])
         else:
             self.__infile_name = ''
 
@@ -95,10 +96,10 @@ class CLF(object):
         if self.issetup: return
 
         self.handle_cl()
-        self.handle_config()
+        self.config()
 
         # input setup
-        if self.__infile_name:
+        if self.__infile_name and not self.__infile_name == '-':
             self.infile = open(self.__infile_name, 'r')
         else:
             self.infile = sys.stdin
