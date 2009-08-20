@@ -16,7 +16,7 @@ def handle_opts(opts):
 
 def datahandler(line):
     global n
-    if n > clmax:
+    if n >= clmax:
         raise StopIteration
 
     n += 1

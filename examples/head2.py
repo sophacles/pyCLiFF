@@ -1,7 +1,7 @@
 from pyCLiFF import CLF
 
 class head(object):
-    def __init__(self, *kw):
+    def __init__(self, **kw):
         self.lineno = 0
         self.maxline = kw.get('max', 10)
         self.fmt = kw.get('fmt', "%(line)s")
@@ -15,14 +15,14 @@ class head(object):
         if opts.num:
             self.fmt = "%(lineno)s: %(line)s"
 
-    def datahandler(line):
-        if self.lineno > self.maxline:
+    def datahandler(self, line):
+        if self.lineno >= self.maxline:
             raise StopIteration
 
         self.lineno += 1
         vals = self.__dict__.copy()
         vals.update(locals())
-        return fmt % vals
+        return self.fmt % vals
 
     def run(self):
         self.myfilter.main()
