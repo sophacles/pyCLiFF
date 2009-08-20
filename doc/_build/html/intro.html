@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &mdash; pyCLiFF v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pyCLiFF v0.1 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">pyCLiFF v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>pyCLiFF is the Python Command Line Filter Framework. It is designed to allow
+developers to quickly create command line filter utilities.  These filter
+utilities take text input, perform some sort of transform on that text, and
+output it again. Most of the time these utilities are quick one-offs,
+considered (at least initially) to be throwaway code. Such programs are
+frequently very simple, requiring code rewrites to use in a simialar context,
+or full of boiler plate code to allow use in multiple contexts.  pyCLiFF
+provides that boilerplate, allowing fr the very simple writing of reusable
+filters.</p>
+<div class="section" id="command-line-filters-an-in-depth-look">
+<h2>Command Line Filters &#8211; an in-depth look<a class="headerlink" href="#command-line-filters-an-in-depth-look" title="Permalink to this headline">¶</a></h2>
+<p>The command line filter concept has it&#8217;s hitory in unix and unix shells.  The
+philosphy of these systems is that many small programs chained together can
+create powerful composites.  The output of one program becomes the input of
+another program. For example:</p>
+<div class="highlight-python"><pre>$cat syslog | grep ERROR |head -n10</pre>
+</div>
+<p>The above script actually runs three programs, <strong>cat</strong>, <strong>grep</strong>,
+and <strong>head</strong>.  <strong>cat</strong> simply outputs the file <tt class="docutils literal"><span class="pre">syslog</span></tt>.
+<strong>grep</strong> searches for text, in this case the string <em>ERROR</em>.
+<strong>head</strong> simply displays a maximum of n lines of output. The | symbol
+means <strong>pipe</strong>, which is the name of the mechanism the shell uses to connect
+the output of one command to the input of another. These pipelines can get very
+complex and powerful, for a more in-depth treatment, see the
+_wikipedia entry:http://en.wikipedia.org/wiki/Pipeline_(Unix)</p>
+<p>Further, *nix  systems provide a very large number of programs taylored to
+processing the text throught pipelines.  Many of these commands are very
+powerful and constitute mini programming languages in themselves. This is
+frequently where problems arrise. Sometimes it is difficult to coerce a program
+to output text exactly as needed, other times it is impossible to find the
+right command or remember its syntax.  If the user knows a programming
+language, like python, it is simpler to just write the correct peice
+for the pipeline by hand. In such ways are new filters born.</p>
+<p>These filters all seem to follow the same basic pattern:</p>
+<ol class="arabic simple">
+<li>Setup/handle arguments</li>
+<li>Mainloop:</li>
+</ol>
+<blockquote>
+<ol class="upperalpha simple">
+<li>Read line from input file (stdin or file)</li>
+<li>Process that line in some way</li>
+<li>Output the result of processing.</li>
+</ol>
+</blockquote>
+<ol class="arabic simple" start="3">
+<li>Cleanup and exit.</li>
+</ol>
+<p>Further, each filter program seems to have a pretty common set of options. Such
+things as turning off stderr output, or redirecting to an output file instead
+of the stdout.  Not every filter needs every option, sometimes because those
+options don&#8217;t make sanse in context of the program, but more frequently because
+they are too much work to add a simple program.</p>
+<p>In any case, a pattern (like shown above) combined with a common set of
+operations (such as the command line arguments), frequently leads to lots of
+boring boilerplate.</p>
+</div>
+<div class="section" id="enter-pycliff">
+<h2>Enter pyCLiFF<a class="headerlink" href="#enter-pycliff" title="Permalink to this headline">¶</a></h2>
+<p>This is where pyCLiFF comes into play. It is designed to take the tedium out of
+simple command line scripts. Say for example you want to output line numbers
+with the text of a pipeline, with pyCLiFF it is as simple as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyCLiFF</span> <span class="kn">import</span> <span class="n">CLF</span>
+
+<span class="n">linenumber</span> <span class="o">=</span> <span class="mf">0</span>
+<span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">linenumber</span>
+    <span class="n">linenumber</span> <span class="o">+=</span><span class="mf">1</span>
+    <span class="k">return</span> <span class="s">&quot;</span><span class="si">%d</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">linenumber</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+<span class="n">CLF</span><span class="p">(</span><span class="n">processdata</span><span class="o">=</span><span class="n">process</span><span class="p">)</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Thats it. <strong>pyCLiFF</strong> takes care of the rest. The main function opens
+stdin and feeds it, line-by-line, into the process function.  It will then
+display the return value on stdout.  Further, if the script (lets call it
+<a href="#id1"><span class="problematic" id="id2">:progname:`number.py`</span></a>) is not in the middle (or end) of a pipeline, but is
+instead first, we could pass it a positional argument like so:</p>
+<div class="highlight-python"><pre>$number.py file</pre>
+</div>
+<p>And <strong>pyCLiFF</strong> will automatically know to look in file for its input instead of
+stdin.</p>
+<p>There is a bit more to <strong>pyCLiFF</strong>, but not much, it is designed to be
+simple and stay out of the way. Some other features include:</p>
+<ul class="simple">
+<li>Built in stderr messaging.</li>
+<li>Silence standard error with -q</li>
+<li>output and/or input from files instead of stdin/stdout</li>
+<li>add your own command line options</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Introduction</a><ul>
+<li><a class="reference external" href="#command-line-filters-an-in-depth-look">Command Line Filters &#8211; an in-depth look</a></li>
+<li><a class="reference external" href="#enter-pycliff">Enter pyCLiFF</a></li>
+</ul>
+</li>
+</ul>
+
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/intro.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">pyCLiFF v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Erich Heine.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

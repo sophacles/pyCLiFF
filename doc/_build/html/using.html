@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using the pyCLiFF Library &mdash; pyCLiFF v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pyCLiFF v0.1 documentation" href="index.html" />
+    <link rel="prev" title="Introduction" href="intro.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="intro.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyCLiFF v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-the-pycliff-library">
+<h1>Using the pyCLiFF Library<a class="headerlink" href="#using-the-pycliff-library" title="Permalink to this headline">¶</a></h1>
+<p>The pyCLiFF library is designed around the user supplied function:
+<strong>processdata</strong>. This function is the main filter, and takes line of text, and
+returns a line of text. This function is the only required part of a filter
+built using pyCLiFF.  It can be thought of as a callback, which is triggered
+every time the <strong>pyCLiFF</strong> main loop encounters a line of text. Other
+callbacks exist, and will be handled below.</p>
+<p>To run a <strong>pyCLiFF</strong> simply instantiate a CLF object and run its
+mainloop.  The CLF class is created with options and callbacks specified in
+it&#8217;s contstuctor, as well as the processdata function:</p>
+<div class="highlight-python"><pre>CLF(optins=[(('-n','--numlins'),{'default':10, "type":int"}),
+            (('-L','--line-numbers'),
+             {'action':'store_true','default':False})],
+     processdata = datafunc,
+     handle_opts = optfunc)</pre>
+</div>
+<p>It has one method for public calling: <em>main</em> () which is called to enter the
+<strong>pyCLiFF</strong> mainloop. This method will return after there is no more
+data to process from the file or stdin.</p>
+<div class="section" id="extra-options-and-arguments">
+<h2>Extra Options and Arguments<a class="headerlink" href="#extra-options-and-arguments" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="options">
+<h3>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h3>
+<p><strong>pyCLiFF</strong> takes advantage of python&#8217;s optparse module. This module
+allows for the trivial building of complex command line argument systems.  See
+the relevent documentation in the python standard library for more information
+on its use.  To create arguments for a filter program, simply pass a list to
+the CLF object at instatiation. This list should consist of tuples. Each tuple
+will be passed to th optparse.OptionParser.add_option() method. These tuples
+should be composed such that the first element is a tuple for *args and the
+second a dict for **kwargs.</p>
+<p>There are also built in options which are used for extra functionality. These
+are:</p>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-q</span>, <span class="option">--quiet</span></kbd></td>
+<td>Turn off stderr to reduce output.</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-o</span>, <span class="option">--outfile</span></kbd></td>
+<td>A file to write output, replaces stdout.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">-f</span>, <span class="option">--configfile</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>A file to load configuration from.</td></tr>
+</tbody>
+</table>
+<p>Options are to be handled by the filter via the callback handle_opts.</p>
+</div>
+<div class="section" id="arguments">
+<h3>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h3>
+<p>Postional arguments are also allowed by <strong>pyCLiFF</strong>. The first
+positional argument is always interpreted as the input filename.  Additional
+arguments may be handled by the program, and will be passed via the
+handle_params callback.</p>
+</div>
+</div>
+<div class="section" id="callbacks">
+<h2>Callbacks<a class="headerlink" href="#callbacks" title="Permalink to this headline">¶</a></h2>
+<p>Callbacks are defined by the CLF class, and used to pass control back to the
+filter for user defined functionality.  Each of these callbacks will be called
+once, during setup. They are functions passed to the CLF.__init__ method, as a
+keyword argument. (See example above).</p>
+<dl class="docutils">
+<dt>handle_opts(values)</dt>
+<dd>This callback is passed an optparse.OptionValues object, and is called in the
+setup phase of CLF.main, before the other callbacks, but after builtin option
+handling.</dd>
+<dt>handle_params(params)</dt>
+<dd>This callback is passed a list of all positional parameters except the first,
+which is used internally to the CLF object. This will be called immediately
+after hanlde_opts is called, but will only be called if there are positional
+parameters to pass.</dd>
+<dt>handle_config(data)</dt>
+<dd>This callback will be called if the command is called with the -f option. It
+will be passed data consisting of the contents of the file specified by -f.</dd>
+</dl>
+<p>In all cases for callbacks, if one is not specified a null operation will be
+called instead, no callbacks are mandatory even if extra command line options
+are specified.</p>
+</div>
+<div class="section" id="subclassing-clf">
+<h2>Subclassing CLF<a class="headerlink" href="#subclassing-clf" title="Permalink to this headline">¶</a></h2>
+<p>If the user chooses to subclass CLF instead of instantiating a CLF instance, it
+is ok. This is expected behavior.  There are a few gotchas to watch out for
+however:</p>
+<p>1. Any callback which is implemented in the subclass and also passed as an
+argument in __init__ will always ignore the argument in favour of the subclass
+implementation.</p>
+<p>2. If the subclass overrides main() it should call CLF.setup to handle command
+line arguments and callbacks.</p>
+<ol class="arabic simple" start="3">
+<li>There is no 3.</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Using the pyCLiFF Library</a><ul>
+<li><a class="reference external" href="#extra-options-and-arguments">Extra Options and Arguments</a><ul>
+<li><a class="reference external" href="#options">Options</a></li>
+<li><a class="reference external" href="#arguments">Arguments</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#callbacks">Callbacks</a></li>
+<li><a class="reference external" href="#subclassing-clf">Subclassing CLF</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="intro.html"
+                                  title="previous chapter">Introduction</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/using.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="intro.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">pyCLiFF v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Erich Heine.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>
