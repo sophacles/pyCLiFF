@@ -1,12 +1,12 @@
 pyCLiFF, the Python Command Line Filter Framework is a simple tool designed
 to remove the boilerplate and annoyances from command line filters.
 
-By command line filter, I mean any command line tool in the grand *nix tradition
-of taking text input and returning text output.  This text may come in from
-a file or from stdin, and leave via file or stdout. As we all know this is the
-basis for the powerful piplined commands in the shell.  Over the years I have
-created many tools to work into a text processing pipeline, in many different
-languages.  Such tools always follow the same pattern:
+In *nix there is a tradition of using pipes to connact many programs together
+when processing data. The programs are usually very single transformations on
+text.  This text may come in from a file or from stdin, and leave via file or
+stdout. This pattern is ubiquitous in *nix programming, allowing for very
+powerful command line usage.   Such tools frequently (mostly?) follow the this
+pattern:
 
 1. Setup/handle arguments
 2. Mainloop:
@@ -15,9 +15,10 @@ languages.  Such tools always follow the same pattern:
   C. Output the result of processing.
 3. Cleanup and exit.
 
-At somepoint I realized that I was typing large chunks of code from memory, and
-that I was even creating fairly standard option sets. So I decided to factor out
-this module.
+The above pattern results in many programs with a large portion of boilerplate
+code, and a few dozen lines of unique application code. pyCLiFF is an attempt
+to cover all the parts of a command line filter that are not unique. (Usually
+this means step B above).
 
 This module is designed to be used in 2 ways:
 
