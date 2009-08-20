@@ -71,18 +71,15 @@ class CLF(object):
 
     def handle_cl(self):
         opts, params = self.__OP.parse_args()
-        self.message('got opts')
 
         self.__outfile_name = opts.outfile
         if opts.configfile:
             self.configfile = opts.configfile
 
         if opts.quiet:
-            self.message('closing stderr')
             sys.stderr.close()
 
         # user options handler
-        self.message("userland opts handling")
         self.handle_opts(opts)
 
         if params:
@@ -97,7 +94,6 @@ class CLF(object):
         # more than once...
         if self.issetup: return
 
-        self.message('a')
         self.handle_cl()
         self.handle_config()
 
@@ -105,14 +101,12 @@ class CLF(object):
         if self.__infile_name:
             self.infile = open(self.__infile_name, 'r')
         else:
-            self.message('using stdin')
             self.infile = sys.stdin
 
         # output setup
         if self.__outfile_name:
             self.outfile = open(self.__outfile_name, self.output_mode)
         else:
-            self.message('using stdout')
             self.outfile = sys.stdout
 
         self.issetup = True
@@ -133,19 +127,14 @@ class CLF(object):
 
 
     def main(self):
-        self.message('doing setup')
         self.setup()
-        self.message('entering mainloop')
         while True:
             indata = self.infile.readline()
-            self.message("got data '%s' (%s)" % (indata, type(indata)))
             if not indata: break
             try:
                 outdata = self.processdata(indata)
             except StopIteration:
                 break
-            self.message('sending output')
             self.outfile.write(outdata)
             self.outfile.flush()
-        self.message('done with mainloop, finishing')
         self.finish()
